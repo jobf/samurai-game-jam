@@ -1,0 +1,18 @@
+[submodule "libs/peote-view"]
+	path = libs/peote-view
+	url = https://github.com/maitag/peote-view.git
+[submodule "libs/input2action"]
+	path = libs/input2action
+	url = https://github.com/maitag/input2action.git
+[submodule "libs/deepnightLibs"]
+	path = libs/deepnightLibs
+	url = https://github.com/deepnight/deepnightLibs.git
+[submodule "libs/json2object"]
+	path = libs/json2object
+	url = https://github.com/elnabo/json2object.git
+[submodule "libs/hxjsonast"]
+	path = libs/hxjsonast
+	url = https://github.com/nadako/hxjsonast.git
+[submodule "libs/ldtk-haxe-api"]
+	path = libs/ldtk-haxe-api
+	url = https://github.com/deepnight/ldtk-haxe-api.git
