@@ -15,7 +15,7 @@ class Title extends Scene
 					label: "START",
 					action: () ->
 					{
-						core.screen.display_shutter_hide();
+						// core.screen.display_shutter_hide();
 						core.sound.play_sound(SoundKey.BUTTON);
 						change(core -> new StoryA(core));
 					},

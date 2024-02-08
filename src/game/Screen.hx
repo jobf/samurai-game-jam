@@ -6,7 +6,6 @@ import lib.peote.FramebufferTextureSlots;
 import peote.view.Display;
 import peote.view.PeoteView;
 
-using lib.peote.TextureTools;
 
 @:publicFields
 class Screen
@@ -85,10 +84,6 @@ class Screen
 		display_hud.zoom = 2;
 		display_hud_hide();
 
-		var title_asset = Assets.getImage("assets/title.png");
-		var title_texture = title_asset.tilesheet_from_image(530, 400);
-		var shutter_sprites = new Tiles(display_shutter, title_texture, "title", 530, 1);
-		shutter_sprites.make(0, 0, 530, 400, 0, false);
 
 		fit_to_window();
 

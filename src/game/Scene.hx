@@ -4,10 +4,7 @@ import game.HudMenu;
 import input2action.Input2Action;
 import lib.input2action.Controller;
 import lib.lime.Audio;
-import lib.pure.Ease;
 import lib.pure.Loop;
-import lib.pure.Repeat;
-import lib.pure.Transformation;
 import lime.ui.Window;
 
 using lib.peote.TextureTools;
@@ -19,23 +16,13 @@ abstract class Scene
 	var controller: ControllerActions;
 	var menu: HudMenu;
 	var menu_config: MenuConfig;
-	var shutter_ease: Ease;
-	var shutter: Repeat;
-	var shutter_is_closing: Bool;
-	var shutter_is_closed: Bool;
-	var shutter_is_opening: Bool;
-	var shutter_is_open: Bool;
+	var shutter:Shutter;
 
 	public function new(core: GameCore, menu_config: MenuConfig)
 	{
 		this.core = core;
 		this.menu_config = menu_config;
 
-		shutter_ease = new Ease(0.0, 1.0, 25, smooth_start_2);
-		shutter = {
-			duration: 0,
-			action: repeat -> transition_shutter(repeat)
-		}
 		controller = {
 			select: {
 				on_press: () ->
@@ -51,37 +38,8 @@ abstract class Scene
 				},
 			}
 		}
-	}
 
-	function transition_shutter(repeat: Repeat)
-	{
-		core.screen.display_shutter.yOffset = -Std.int(core.screen.element_shutter.height * shutter_ease.step(1));
-
-		if (shutter_ease.is_at_end())
-		{
-			if (shutter_is_opening)
-			{
-				shutter_is_open = true;
-				shutter_is_opening = false;
-			}
-			if (shutter_is_closing)
-			{
-				shutter_is_closed = true;
-				shutter_is_closing = false;
-			}
-		}
-	}
-
-	public function open_shutter(duration: Int = 30)
-	{
-		shutter_is_opening = true;
-		shutter_ease.configure(0.0, 1.0, duration);
-	}
-
-	public function close_shutter(duration: Int = 30)
-	{
-		shutter_is_closing = true;
-		shutter_ease.configure(1.0, 0.0, duration);
+		shutter = new Shutter(core.screen.display_shutter);
 	}
 
 	function menu_open()

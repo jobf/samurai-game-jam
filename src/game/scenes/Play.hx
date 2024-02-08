@@ -622,14 +622,14 @@ class Play extends Scene
 		{
 			if (player.animation_frame >= player.animation.frame_count - 1)
 			{
-				if (!core.scene.shutter_is_closing)
+				if (!core.scene.shutter.is_closing)
 				{
-					core.scene.close_shutter(10);
+					core.scene.shutter.close_shutter(10);
 				}
-				if (core.scene.shutter_is_closed && !core.scene.shutter_is_opening)
+				if (core.scene.shutter.is_closed && !core.scene.shutter.is_opening)
 				{
 					reset_to_checkpoint();
-					core.scene.open_shutter(10);
+					core.scene.shutter.open_shutter(10);
 				}
 			}
 		}
