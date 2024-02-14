@@ -157,6 +157,8 @@ class Screen
 		// offset the view display to keep it in the center of the window
 		var view_x = Std.int(((peote_view.width / scale) / 2) - (res_width / 2));
 		var view_y = Std.int(((peote_view.height / scale) / 2) - (res_height / 2));
+		view_display.x  = view_x;
+		view_display.y  = view_y;
 		render_textures.move_displays(view_x, view_y);
 	}
 

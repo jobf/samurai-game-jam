@@ -60,6 +60,9 @@ class DeepnightMovement
 	{
 		position.grid_x = column;
 		position.grid_y = row;
+		position.grid_cell_ratio_x = 0.5;
+		position.grid_cell_ratio_y = 0.5;
+		update_position();
 	}
 
 	public function overlaps(other: DeepnightMovement): Bool

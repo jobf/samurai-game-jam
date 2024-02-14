@@ -1,5 +1,6 @@
 package game;
 
+import game.Samurai.AnimationKey;
 import lib.lime.Audio;
 import lib.peote.Elements;
 import lib.peote.Glyph;
@@ -61,11 +62,15 @@ class Guard extends Samurai
 
 	public function reset()
 	{
+		stop_x();
 		this.facing = ldtk_entity.f_facing;
 		state_next = ldtk_entity.f_pose == Crouch ? CROUCH : IDLE;
 		change_state(state_next);
 		movement.teleport_to_grid(ldtk_entity.cx, ldtk_entity.cy);
+		position_x_previous = movement.position.x;
+		position_y_previous = movement.position.y;
 		set_alertness(false);
+		update();
 	}
 
 	public function set_alertness(is_alert: Bool)

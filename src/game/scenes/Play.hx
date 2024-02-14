@@ -538,74 +538,71 @@ class Play extends Scene
 	**/
 	function update_guard(samurai: Guard)
 	{
-		if (player.can_be_killed())
+		if (samurai.ldtk_entity.f_wakeOn == Enum_WakeOn.Flower && !player.is_holding_sacred_stone)
 		{
-			var x_delta = player.movement.position.grid_x - samurai.movement.position.grid_x;
-			var x_grid_distance = Math.abs(x_delta);
-			var y_delta = player.movement.position.grid_y - samurai.movement.position.grid_y;
-			var y_grid_distance = Math.abs(y_delta);
-			// fast distance check - is distance close enough to be seen?
-			final sight_grid_limit = samurai.ldtk_entity.f_wakeDistance;
-			final sight_grid_minimum = 1;
-
-			var x_pixel_distance = player.movement.position.x - samurai.movement.position.x;
-			var direction_of_player = x_pixel_distance > 1 ? 1 : -1;
-			var samurai_is_facing_player = samurai.facing == direction_of_player;
-
-			if (samurai.is_moving_x && !samurai_is_facing_player)
-			{
-				samurai.stop_x();
-				return;
-			}
-
-			if (samurai.ldtk_entity.f_wakeOn == Enum_WakeOn.Flower && !player.is_holding_sacred_stone)
-			{
-				return;
-			}
-
-			var samurai_can_attack = (player.state.key != HURT && player.state.key != DEATH && player.state.key != ROLL_GROUND)
-				&& player.movement.is_on_ground
-				&& samurai_is_facing_player
-				&& (player.is_in_cell(samurai.movement.position.grid_x + direction_of_player, samurai.movement.position.grid_y)
-					|| player.is_in_cell(samurai.movement.position.grid_x, samurai.movement.position.grid_y));
-
-			if (samurai_can_attack)
-			{
-				trace('samurai attack');
-				if (samurai.is_moving_x)
-				{
-					samurai.stop_x();
-				}
-				samurai.state.key_next = SWORD;
-				core.sound.play_sound(SoundKey.SWIPE);
-
-				player.stop_x();
-				player.state.key_next = HURT;
-				return;
-			}
-
-			var do_line_of_sight_check = samurai_is_facing_player
-				&& (x_grid_distance <= sight_grid_limit && y_grid_distance <= sight_grid_limit && x_grid_distance > sight_grid_minimum);
-
-			if (do_line_of_sight_check)
-			{
-				var is_actor_in_sight = !is_line_blocked(
-					player.movement.position.grid_x,
-					player.movement.position.grid_y,
-					samurai.movement.position.grid_x,
-					samurai.movement.position.grid_y,
-					(grid_x, grid_y) -> level.l_PlatformCollisions.hasValue(grid_x, grid_y)
-				);
-
-				if (is_actor_in_sight)
-				{
-					samurai.move_in_direction_x(direction_of_player);
-					samurai.set_alertness(true);
-				}
-			}
+			// this guard will do nothing unless stone is collected
+			return;
 		}
 
-		samurai.update();
+		if (player.is_vulnerable())
+		{
+			var distance_to_player = distance_to_point(
+				player.movement.position.x,
+				player.movement.position.y,
+				samurai.movement.position.x,
+				samurai.movement.position.y
+			);
+
+			var direction_of_player = player.movement.position.x > samurai.movement.position.x ? 1 : -1;
+			var is_facing_player = samurai.facing == direction_of_player;
+			final attack_distance = 30;
+			// f_wakeDistance is measured in grid cells
+			var wake_distance = samurai.ldtk_entity.f_wakeDistance * tile_size_px;
+			var is_close_to_player = distance_to_player < wake_distance || distance_to_player < attack_distance;
+			var is_in_range = is_facing_player && is_close_to_player;
+
+			if (is_in_range)
+			{
+				// trace('samurai is interested wake distance $wake_distance, actual distance $distance_to_player, is_facing_player $is_facing_player ');
+
+				if (distance_to_player < attack_distance)
+				{
+					// attack
+					trace('samurai attack');
+					samurai.stop_x();
+					if (samurai.state.key != SWORD)
+					{
+						samurai.state.key_next = SWORD;
+						core.sound.play_sound(SoundKey.SWIPE);
+						player.add_attacker(samurai);
+					}
+				}
+				else
+				{
+					// follow?
+					var is_actor_in_sight = !is_line_blocked(
+						player.movement.position.grid_x,
+						player.movement.position.grid_y,
+						samurai.movement.position.grid_x,
+						samurai.movement.position.grid_y,
+						(grid_x, grid_y) -> level.l_PlatformCollisions.hasValue(grid_x, grid_y)
+					);
+
+					if (is_actor_in_sight)
+					{
+						samurai.move_in_direction_x(direction_of_player);
+						samurai.set_alertness(true);
+					}
+				}
+			}
+
+			if (!is_in_range && samurai.is_moving_x)
+			{
+				samurai.stop_x();
+			}
+
+			samurai.update();
+		}
 	}
 
 	function reset_to_checkpoint()

@@ -57,15 +57,10 @@ class Samurai extends Actor
 		}
 
 		thought_clearer = {
-			duration: Std.int(30 * 2.5),
-			action: repeat ->
-			{
-				if (has_thought)
-				{
-					clear_thought();
-				}
-			}
+			duration: Std.int(30 * 2.0),
+			action: repeat -> clear_thought()
 		}
+
 		repeaters.push(thought_clearer);
 
 		state_next = IDLE;
@@ -201,9 +196,9 @@ class Samurai extends Actor
 		}
 	}
 
-	public function can_be_killed(): Bool
+	public function is_vulnerable(): Bool
 	{
-		return state.key != DEATH && state.key != HURT && state.key_next != HURT;
+		return state.key != DEATH && state.key != HURT && state.key_next != HURT && state.key != ROLL_GROUND;
 	}
 
 	function show_thought(thought: String)
@@ -298,7 +293,7 @@ class Data
 		HURT => {
 			key: HURT,
 			mode: ONCE,
-			frame_count: 10
+			frame_count: 4
 		},
 		IDLE => {
 			key: IDLE,
