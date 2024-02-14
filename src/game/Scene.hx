@@ -9,6 +9,7 @@ import lime.ui.Window;
 
 using lib.peote.TextureTools;
 
+@:publicFields
 abstract class Scene
 {
 	var input2Action: Input2Action;
@@ -16,7 +17,7 @@ abstract class Scene
 	var controller: ControllerActions;
 	var menu: HudMenu;
 	var menu_config: MenuConfig;
-	var shutter:Shutter;
+	var is_update_enabled: Bool = false;
 
 	public function new(core: GameCore, menu_config: MenuConfig)
 	{
@@ -38,20 +39,18 @@ abstract class Scene
 				},
 			}
 		}
-
-		shutter = new Shutter(core.screen.display_shutter);
 	}
 
 	function menu_open()
 	{
-		menu.open(core.input, controller);
-		core.is_paused = true;
+		menu.open(controller);
+		core.pause();
 	}
 
 	function menu_close()
 	{
 		menu.close();
-		core.is_paused = false;
+		core.unpause();
 	}
 
 	public function init()
@@ -63,7 +62,7 @@ abstract class Scene
 			menu = null;
 		}
 
-		menu = new HudMenu(core.screen, menu_config, core.sound);
+		menu = new HudMenu(core, menu_config);
 
 		begin();
 	}
@@ -76,10 +75,7 @@ abstract class Scene
 	/**
 		Handle loop logic here, e,g, calculating movement for player, change object states, etc.
 	**/
-	public function update()
-	{
-		shutter.update();
-	}
+	abstract public function update(): Void;
 
 	/**
 		Make draw calls here
@@ -92,12 +88,6 @@ abstract class Scene
 	**/
 	abstract public function end(): Void;
 
-	function change(scene_constructor: GameCore -> Scene)
-	{
-		menu_close();
-		core.scene_change(scene_constructor);
-	}
-
 	public function dispose_menu()
 	{
 		menu.dispose();
@@ -106,16 +96,6 @@ abstract class Scene
 	public function input_enable()
 	{
 		core.input.change_target(controller);
-	}
-
-	public function pause()
-	{
-		menu_open();
-	}
-
-	public function unpause()
-	{
-		menu_close();
 	}
 }
 
@@ -128,7 +108,8 @@ class GameCore
 	var fixed_steps_per_second(default, null) = 30;
 	var loop(default, null): Loop;
 	var scene(default, null): Scene;
-	var is_paused: Bool = false;
+	private var is_paused: Bool = false;
+	var shutter: Shutter;
 
 	function new(window: Window, screen: Screen, sound: SoundManager, scene_constructor: GameCore -> Scene)
 	{
@@ -136,20 +117,28 @@ class GameCore
 
 		this.screen = screen;
 		this.sound = sound;
+		shutter = new Shutter(this);
 
 		loop = new Loop({
 			step: () -> fixed_step_update(),
 			end: step_ratio -> draw(step_ratio),
 		}, fixed_steps_per_second);
 
-		scene_begin(scene_constructor);
+		var is_shutter_staying_closed = true;
+		scene_begin(scene_constructor, is_shutter_staying_closed);
 	}
 
-	private function scene_begin(scene_constructor: GameCore -> Scene)
+	private function scene_begin(scene_constructor: GameCore -> Scene, is_shutter_staying_closed: Bool = false)
 	{
 		scene = scene_constructor(this);
-		scene.input_enable();
-		scene.init();
+		if (is_shutter_staying_closed)
+		{
+			scene.init();
+		}
+		else
+		{
+			shutter.open_shutter(() -> scene.init());
+		}
 	}
 
 	private inline function scene_end()
@@ -163,9 +152,10 @@ class GameCore
 
 	function scene_change(scene_constructor: GameCore -> Scene)
 	{
+		trace('change scene');
 		scene_end();
-
-		scene_begin(scene_constructor);
+		screen.display_hud_show();
+		shutter.close_shutter(() -> scene_begin(scene_constructor));
 	}
 
 	function scene_reset()
@@ -175,18 +165,24 @@ class GameCore
 			is_paused = false;
 			scene.end();
 			scene.init();
-			scene.input_enable();
 		}
 	}
 
 	private function fixed_step_update()
 	{
-		scene.update();
+		shutter.update();
+		if (scene.is_update_enabled)
+		{
+			scene.update();
+		}
 	}
 
 	private function draw(step_ratio: Float)
 	{
-		scene.draw(step_ratio);
+		if (scene.is_update_enabled)
+		{
+			scene.draw(step_ratio);
+		}
 	}
 
 	function frame(elapsed_ms: Int)
@@ -195,17 +191,17 @@ class GameCore
 		{
 			loop.frame(elapsed_ms);
 		}
+		else
+			trace('core is paused, not running loop');
 	}
 
 	public function pause()
 	{
 		is_paused = true;
-		scene.pause();
 	}
 
 	public function unpause()
 	{
 		is_paused = false;
-		scene.unpause();
 	}
 }

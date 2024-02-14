@@ -1,5 +1,7 @@
 package lib.input2action;
 
+import input2action.GamepadAction;
+import input2action.KeyboardAction;
 import input2action.ActionConfig;
 import input2action.ActionMap;
 import input2action.Input2Action;
@@ -193,21 +195,19 @@ class Input
 
 		var action_config = Controller.init_action_config();
 
-		input2Action = new Input2Action(action_config, action_map);
+		input2Action = new Input2Action();
 
-		input2Action.setKeyboard();
+		var keyboard_action = new KeyboardAction(action_config, action_map);
 
-		input2Action.onGamepadConnect = function(gamepad: Gamepad)
-		{
-			input2Action.setGamepad(gamepad);
-		}
+		input2Action.addKeyboard(keyboard_action);
 
-		input2Action.onGamepadDisconnect = function(player: Int)
-		{
-			// todo ? or not todo
-		}
+		Gamepad.onConnect.add(gamepad -> {
+			var gamepad_action = new GamepadAction(gamepad.id, action_config, action_map);
+			input2Action.addGamepad(gamepad, gamepad_action);
+			gamepad.onDisconnect.add(() -> input2Action.removeGamepad(gamepad));
+		});
 
-		input2Action.enable(window);
+		input2Action.registerKeyboardEvents(window);
 	}
 
 	public function change_target(target: ControllerActions)

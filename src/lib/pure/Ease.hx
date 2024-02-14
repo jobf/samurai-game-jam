@@ -67,7 +67,8 @@ class Ease
 	**/
 	public function is_at_end(): Bool
 	{
-		return time > duration || time == 0;
+		return time > duration + 1 ;//|| time == 0;
+		// return time > duration || time == 0;
 	}
 
 	/**

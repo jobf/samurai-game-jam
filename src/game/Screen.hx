@@ -1,11 +1,9 @@
 package game;
 
-import lime.utils.Assets;
-import lib.peote.Elements;
+import peote.ui.PeoteUIDisplay;
 import lib.peote.FramebufferTextureSlots;
 import peote.view.Display;
 import peote.view.PeoteView;
-
 
 @:publicFields
 class Screen
@@ -22,14 +20,14 @@ class Screen
 	var display_entities: Display;
 	var display_icons: Display;
 	var display_level_in_front: Display;
-	var display_hud: Display;
-	var display_shutter: Display;
+	var display_hud: PeoteUIDisplay;
+	var display_shutter: PeoteUIDisplay;
 
 	var element_shutter: ViewElement;
 	var view_display: Display;
 	var element_bg: ViewElement;
 	var element_hud: ViewElement;
-
+	var displays: Array<PeoteUIDisplay>;
 	var res_width = 530;
 	var res_height = 400;
 	var slot: Int = 0;
@@ -54,7 +52,7 @@ class Screen
 			0x00000000, // level in front
 			0x5c8b93FF, // hud
 			0x00000000, //
-			0x243d5c10, // shutter
+			0x243d5c00, // shutter
 		];
 
 		render_textures = new FramebufferTextureSlots(peote_view, window_width, window_height, slot_count, display_colors);
@@ -84,7 +82,6 @@ class Screen
 		display_hud.zoom = 2;
 		display_hud_hide();
 
-
 		fit_to_window();
 
 		peote_view.window.onResize.add((width, height) ->
@@ -97,25 +94,33 @@ class Screen
 
 	function display_hud_hide()
 	{
+		display_hud.hide();
+		trace('display_hud_hide');
 		element_hud.tint.a = 0x00;
 		draw();
+		return;
 	}
 
 	function display_hud_show()
 	{
+		display_hud.show();
 		element_hud.tint.a = 0xff;
+
+		trace('display_hud_show');
 		draw();
+		return;
+
 	}
 
 	function display_shutter_hide()
 	{
-		element_shutter.tint.a = 0x00;
+		// element_shutter.tint.a = 0x00;
 		draw();
 	}
 
 	function display_shutter_show()
 	{
-		element_shutter.tint.a = 0xff;
+		// element_shutter.tint.a = 0xff;
 		draw();
 	}
 
@@ -152,9 +157,7 @@ class Screen
 		// offset the view display to keep it in the center of the window
 		var view_x = Std.int(((peote_view.width / scale) / 2) - (res_width / 2));
 		var view_y = Std.int(((peote_view.height / scale) / 2) - (res_height / 2));
-		view_display.x = view_x;
-		view_display.y = view_y;
-		// trace('scaled $scale x y $view_x $view_y');
+		render_textures.move_displays(view_x, view_y);
 	}
 
 	public function draw()

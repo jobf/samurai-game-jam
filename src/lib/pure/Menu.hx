@@ -4,7 +4,7 @@ import lib.pure.Node;
 
 interface IMenu
 {
-	function change_selection(direction: Int): Void;
+	function iterate_selection(direction: Int): Void;
 
 	function ascend(): Void;
 
@@ -36,7 +36,7 @@ class Menu implements IMenu
 		{
 			this.on_navigate = on_navigate;
 		}
-		if (on_navigate == null)
+		if (on_action == null)
 		{
 			this.on_action = () -> return;
 		}
@@ -111,7 +111,7 @@ class Menu implements IMenu
 		return nodes[index].item.description;
 	}
 
-	public function change_selection(direction: Int)
+	public function iterate_selection(direction: Int)
 	{
 		index = (index + nodes.length + direction) % nodes.length;
 		if (nodes[index].item.on_select != null)
@@ -119,6 +119,36 @@ class Menu implements IMenu
 			nodes[index].item.on_select(nodes[index].item);
 		}
 		on_navigate();
+	}
+
+	// public function change_selection(index: Int)
+	// {
+	// 	this.index = index;
+	// 	if (nodes[index].item.on_select != null)
+	// 	{
+	// 		nodes[index].item.on_select(nodes[index].item);
+	// 	}
+	// }
+
+	public function change_selection(item: MenuItem)
+	{
+		index = find_node_index(item);
+		on_navigate();
+	}
+
+	inline function find_node_index(item: MenuItem): Int
+	{
+		var index = 0;
+		for (node in nodes)
+		{
+			if (item == node.item)
+			{
+				break;
+			}
+			
+			index++;
+		}
+		return index;
 	}
 
 	public function descend()

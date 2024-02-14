@@ -1,5 +1,6 @@
 package lib.peote;
 
+import peote.ui.PeoteUIDisplay;
 import peote.view.Buffer;
 import peote.view.Color;
 import peote.view.Display;
@@ -31,7 +32,7 @@ class ViewElement implements Element
 @:publicFields
 class DisplayElement
 {
-	var display: Display;
+	var display: PeoteUIDisplay;
 	var element: ViewElement;
 }
 
@@ -60,14 +61,21 @@ class FramebufferTextureSlots
 		displays = [
 			for (slot in 0...slot_count)
 			{
-				var display = new Display(
+				var display = new PeoteUIDisplay(
 					0,
 					0,
 					width,
 					height,
 					display_colors[slot]
 				);
+				
+				display.overOutEventsBubble = true;
+				display.upDownEventsBubble = true;
+				display.moveEventsBubble = true;
+				display.wheelEventsBubble = true;
+
 				peote_view.addFramebufferDisplay(display);
+				
 
 				var element = new ViewElement(0, 0, width, height, slot);
 				view_buffer.addElement(element);
@@ -84,5 +92,12 @@ class FramebufferTextureSlots
 	function add_to_display(display: Display)
 	{
 		view_program.addToDisplay(display);
+	}
+
+	public function move_displays(x:Int, y:Int) {
+		for (element in displays) {
+			element.display.x = x;
+			element.display.y = y;
+		}
 	}
 }

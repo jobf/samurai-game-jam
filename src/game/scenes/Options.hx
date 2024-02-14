@@ -29,7 +29,7 @@ class Options extends Scene
 				},
 				{
 					label: "BACK",
-					action: () -> change(core -> new Title(core)),
+					action: () -> core.scene_change(core -> new Title(core)),
 				}
 			]
 		}
@@ -39,12 +39,10 @@ class Options extends Scene
 	public function begin()
 	{
 		menu_open();
+		core.unpause();
 	}
 
-	override function update()
-	{
-		super.update();
-	}
+	public function update() {}
 
 	public function draw(step_ratio: Float) {}
 

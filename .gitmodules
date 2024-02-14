@@ -16,3 +16,15 @@
 [submodule "libs/ldtk-haxe-api"]
 	path = libs/ldtk-haxe-api
 	url = https://github.com/deepnight/ldtk-haxe-api.git
+[submodule "libs/peote-layout"]
+	path = libs/peote-layout
+	url = https://github.com/maitag/peote-layout.git
+[submodule "libs/jasper"]
+	path = libs/jasper
+	url = https://github.com/PongoEngine/jasper.git
+[submodule "libs/peote-ui"]
+	path = libs/peote-ui
+	url = https://github.com/maitag/peote-ui.git
+[submodule "libs/thx.core"]
+	path = libs/thx.core
+	url = https://github.com/fponticelli/thx.core.git

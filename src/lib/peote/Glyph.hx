@@ -8,6 +8,8 @@ import peote.view.Display;
 import peote.view.Program;
 import peote.view.Texture;
 
+using thx.Strings;
+
 @:publicFields
 class Glyphs
 {
@@ -47,7 +49,7 @@ class Glyphs
 		program.addTexture(texture, texture_name);
 	}
 
-	public function make_line(x: Int, y: Int, text: String, tint: Int): GlyphLine
+	public function make_line(x: Float, y: Float, text: String, tint: Int): GlyphLine
 	{
 		return {
 			text: text,
@@ -105,7 +107,7 @@ class Glyphs
 		buffer.update();
 	}
 
-	public function clear_all()
+	public function clear()
 	{
 		buffer.clear();
 	}
@@ -193,6 +195,95 @@ class GlyphLine
 	public function center_on(x: Float, y: Float)
 	{
 		move(Std.int(x - width / 2), Std.int(y));
+	}
+}
+
+class Pager
+{
+	var pages: Array<Array<String>>;
+	var glyphs: Glyphs;
+	var page_index: Int;
+	var columns: Int;
+	var rows: Int;
+	var font_model: FontModel;
+	var line_height: Int;
+	var lines: Array<GlyphLine>;
+
+	public function new(sections: Array<String>, display: Display, font_model: FontModel, width_px: Float, height_px: Float, line_height: Int)
+	{
+		this.pages = [];
+		this.glyphs = new Glyphs(display, font_model);
+		this.font_model = font_model;
+		columns = Std.int(width_px / font_model.element_width);
+		rows = Std.int(height_px / font_model.element_height);
+		this.line_height = line_height;
+		page_index = 0;
+		for (section in sections)
+		{
+			var page = [];
+			var is_page_pushed = false;
+			for (line in section.wrapColumns(columns).split('\n'))
+			{
+				page.push(line);
+				if (page.length == rows)
+				{
+					pages.push(page);
+					is_page_pushed = true;
+					page = [];
+				}
+			}
+			if (!is_page_pushed)
+			{
+				pages.push(page);
+			}
+		}
+
+		lines = [
+			for (n => text in pages[page_index])
+			{
+				// trace(text);
+				glyphs.make_line(
+					0,
+					n * font_model.element_height + 2,
+					text,
+					0xffffffff
+				);
+			}
+		];
+	}
+
+	inline public function is_on_last_page(): Bool
+	{
+		return page_index >= pages.length - 1;
+	}
+
+	public function show_next_page()
+	{
+		if (!is_on_last_page())
+		{
+			page_index++;
+			for (n => text in pages[page_index])
+			{
+				if (n < lines.length)
+				{
+					lines[n].change_text(text);
+				}
+				else
+				{
+					lines.push(glyphs.make_line(
+						0,
+						n * font_model.element_height + 2,
+						text,
+						0xffffffff
+					));
+				}
+			}
+		}
+	}
+
+	public function clear()
+	{
+		glyphs.clear();
 	}
 }
 

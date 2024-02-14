@@ -6,12 +6,16 @@
 	<window width="530" height="400" vsync="true" allowHighDPI="false" />
 	
 	<haxelib name="peote-view" path="libs/peote-view" />
+	<haxelib name="peote-ui" path="libs/peote-ui" />
+	<haxelib name="peote-layout" path="libs/peote-layout" />
+	<haxelib name="jasper" path="libs/jasper" />
 	<haxelib name="lime" />
 	<haxelib name="hxjsonast" path="libs/hxjsonast" />
 	<haxelib name="json2object" path="libs/json2object" />
 	<haxelib name="input2action" path="libs/input2action" />
 	<haxelib name="deepnightLibs" path="libs/deepnightLibs" />
 	<haxelib name="ldtk-haxe-api" path="libs/ldtk-haxe-api" />
+	<haxelib name="thx.core" path="libs/thx.core" />
 	
 	<source path="src" />
 	

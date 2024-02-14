@@ -28,29 +28,28 @@ class Play extends Scene
 	var sprite_size_px = 96;
 
 	var fills: Fills;
-	var locked_wall: LockedWall;
-	var camera: Camera;
-	var player: Player;
-	var guards: Array<Guard>;
-	var goals: Array<Goal>;
-	var level: LdtkData_Level;
-
 	var sprites_entities: Sprites;
-
 	var tiles_level_behind: Tiles;
 	var tiles_level_in_front: Tiles;
 	var tiles_level_decor: Tiles;
+	var glyphs_entity: Glyphs;
+	var glyphs_front: Glyphs;
+	var camera: Camera;
+
+	var locked_wall: LockedWall;
+	var player: Player;
+	var guards: Array<Guard>;
+	var goals: Array<Goal>;
+	var sacred_stone: Sprite;
+	var level: LdtkData_Level;
 
 	var restart_locations: Map<Int, Array<Int>>;
 	var restart_gates: Array<Gate>;
 
+	var is_goal_reached: Bool;
 	var is_checking_gates: Bool = false;
 
 	var restart_key: Int;
-	var glyphs_entity: Glyphs;
-	var glyphs_front: Glyphs;
-	var sacred_stone: Sprite;
-	var is_goal_reached: Bool;
 	var color_blocks: Fills;
 	var steps_until_end: Int;
 
@@ -72,8 +71,12 @@ class Play extends Scene
 					// action: () -> core.scene_change(core -> new Play(core)),
 				},
 				{
-					label: "EXIT TO TITLE",
-					action: () -> change(core -> new Title(core)),
+					label: "QUIT GAME",
+					action: () ->
+					{
+						menu_close();
+						core.scene_change(core -> new Title(core));
+					},
 				},
 				{
 					label: "VOLUME DOWN",
@@ -91,7 +94,8 @@ class Play extends Scene
 						core.sound.play_sound(SoundKey.HURT_B);
 					}
 				},
-			]
+			],
+			on_close: () -> core.unpause()
 		}
 		super(core, menu_config);
 	}
@@ -183,15 +187,17 @@ class Play extends Scene
 		camera.center_on(player.movement.position.x, player.movement.position.y);
 		camera.toggle_debug();
 
-		core.input.change_target(controller);
-
 		var total_tiles = 0;
 		total_tiles += tiles_level_behind.total;
 		total_tiles += tiles_level_decor.total;
 		total_tiles += tiles_level_in_front.total;
 
 		trace('begin play ${Date.now()} $total_tiles camera boundary is ${camera.scroll.boundary_floor}');
-		core.sound.play_sound(BEGIN);
+
+		core.sound.play_sound(SoundKey.BEGIN);
+		input_enable();
+		core.screen.display_hud_hide();
+		is_update_enabled = true;
 	}
 
 	function map_collision_function(column: Int, row: Int, is_player: Bool)
@@ -615,21 +621,20 @@ class Play extends Scene
 		player.reset();
 	}
 
-	override function update()
+	public function update()
 	{
-		super.update();
 		if (player.state.key == DEATH)
 		{
 			if (player.animation_frame >= player.animation.frame_count - 1)
 			{
-				if (!core.scene.shutter.is_closing)
+				if (!core.shutter.is_closing)
 				{
-					core.scene.shutter.close_shutter(10);
+					core.shutter.close_shutter(10, null);
 				}
-				if (core.scene.shutter.is_closed && !core.scene.shutter.is_opening)
+				if (core.shutter.is_closed && !core.shutter.is_opening)
 				{
 					reset_to_checkpoint();
-					core.scene.shutter.open_shutter(10);
+					core.shutter.open_shutter(10, () -> core.input.change_target(controller));
 				}
 			}
 		}
@@ -715,6 +720,8 @@ class Play extends Scene
 			steps_until_end--;
 			if (steps_until_end <= 0)
 			{
+				// core.unpause();
+				is_update_enabled = false;
 				core.scene_change(core -> new End(core));
 			}
 		}
@@ -753,9 +760,12 @@ class Play extends Scene
 	public function end()
 	{
 		fills.clear();
-		tiles_level_behind.clear();
 		sprites_entities.clear();
+		tiles_level_behind.clear();
 		tiles_level_in_front.clear();
+		tiles_level_decor.clear();
+		// glyphs_entity.clear();
+		// glyphs_front.clear();
 		camera.clear();
 	}
 }

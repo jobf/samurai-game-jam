@@ -1,4 +1,5 @@
 import game.Scene;
+import game.scenes.Play;
 import game.scenes.Title;
 import game.Screen;
 import game.Sounds;
@@ -7,6 +8,8 @@ import haxe.Log;
 import lib.peote.PreloaderUi;
 import lime.app.Application;
 import lime.ui.KeyCode;
+import peote.ui.PeoteUI;
+import peote.ui.PeoteUIDisplay;
 import peote.view.PeoteView;
 
 class Main extends Application
@@ -27,7 +30,7 @@ class Main extends Application
 				{
 					is_ready = false;
 
-					var background_color = 0x5d7275FF;
+					var background_color = 0x5c8b93FF;
 					// var background_color = 0xf000f0ff;
 					peote_view = new PeoteView(window, background_color);
 					preloader_ui = new PreloaderUi(peote_view);
@@ -59,6 +62,8 @@ class Main extends Application
 
 	override function onPreloadComplete(): Void
 	{
+		PeoteUIDisplay.registerEvents(window);
+		
 		preloader_ui.clear();
 
 		var screen = new Screen(peote_view);
@@ -69,9 +74,8 @@ class Main extends Application
 			screen,
 			sound,
 			core -> new Title(core)
+			// core -> new Play(core)
 		);
-
-		// core = new GameCore(window, screen, sound, core -> new Play(core));
 
 		is_ready = true;
 	}
