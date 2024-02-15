@@ -109,6 +109,7 @@ class Player extends Samurai
 			icon_glyphs.change_text(" ");
 			icon.tint = 0x00000000;
 		}
+		clear_thought();
 	}
 
 	public function hide_icon()
