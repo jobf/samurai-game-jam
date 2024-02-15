@@ -261,8 +261,9 @@ class PlatformerMovement extends DeepnightMovement
 	/** true during the ascent and descent of a jump **/
 	var is_jump_in_progress: Bool = false;
 
+	var steps_remaining_before_apex: Int = 0;
 	var jump_steps_remaining: Int = 0;
-
+	
 	/** true when no vertical movement is possible towards floor **/
 	var is_on_ground: Bool = true;
 
@@ -279,7 +280,7 @@ class PlatformerMovement extends DeepnightMovement
 		var jump_height = jump_config.height_tiles_max;
 		// calculate gravity
 		gravity_ascent = -(-2.0 * jump_height / (jump_config.ascent_step_count * jump_config.ascent_step_count));
-		gravity_descent = -(-2.0 * jump_height / (jump_config.descent_step_count * jump_config.descent_step_count)) * 0.5;
+		gravity_descent = -(-2.0 * jump_height / (jump_config.descent_step_count * jump_config.descent_step_count));
 
 		// calculate velocity
 		velocity_ascent = -((2.0 * jump_height) / jump_config.ascent_step_count);
@@ -325,6 +326,7 @@ class PlatformerMovement extends DeepnightMovement
 		is_jump_in_progress = true;
 
 		jump_steps_remaining = jump_config.ascent_step_count + jump_config.descent_step_count;
+		steps_remaining_before_apex = jump_config.ascent_step_count;
 
 		// reset coyote time because we left the ground with a jump
 		coyote_steps_remaining = 0;
@@ -401,15 +403,16 @@ class PlatformerMovement extends DeepnightMovement
 			// descent phase if delta_y is positive (moving towards floor)
 
 			// calculate gravity
-			gravity_ascent = -(-2.0 * jump_config.height_tiles_max / (jump_steps_remaining * jump_steps_remaining));
-			gravity_descent = -(-2.0 * jump_config.height_tiles_max / (jump_steps_remaining * jump_steps_remaining));
-			gravity_ascent = jump_config.height_tiles_max / (2 * jump_steps_remaining * jump_steps_remaining);
+			gravity_ascent = -(-2.0 * jump_config.height_tiles_max / (steps_remaining_before_apex * steps_remaining_before_apex));
+			gravity_descent = -(-2.0 * jump_config.height_tiles_max / (steps_remaining_before_apex * steps_remaining_before_apex));
+			gravity_ascent = jump_config.height_tiles_max / (2 * steps_remaining_before_apex * steps_remaining_before_apex);
 			// calculate velocity
 			velocity_ascent = -((2.0 * jump_config.height_tiles_max) / jump_config.ascent_step_count);
 			velocity_descent = Math.sqrt(2 * gravity_descent * jump_config.height_tiles_min);
 
 			// velocity.delta_y += velocity.delta_y <= 0 ? gravity_ascent : gravity_descent;
 			velocity.delta_y += gravity_ascent;
+			steps_remaining_before_apex--;
 			jump_steps_remaining--;
 		}
 		else
@@ -424,16 +427,16 @@ class PlatformerMovement extends DeepnightMovement
 class JumpConfig
 {
 	/** maximum height of jump, measured in tiles **/
-	public var height_tiles_max: Float = 3.0; // todo - is this a bug? appears to be double the distance
+	public var height_tiles_max: Float = 6.0;
 
 	/** minimum height of jump, measured in tiles **/
 	public var height_tiles_min: Float = 2.5;
 
 	/** duration of jump ascent time, measured in game update steps **/
-	public var ascent_step_count = 12;
+	public var ascent_step_count = 24;
 
 	/** duration of jump descent time, measured in game update steps **/
-	public var descent_step_count = 7;
+	public var descent_step_count = 15;
 
 	/** duration of jump buffer time, measured in game steps**/
 	public var buffer_step_count: Int = 15;

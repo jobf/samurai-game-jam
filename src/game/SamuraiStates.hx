@@ -34,9 +34,9 @@ class StateJump extends State
 
 	public function update(): StateKey
 	{
-		if (samurai.movement.jump_steps_remaining <= 0)
+		if (samurai.movement.is_on_ground)
 		{
-			key_next = LAND;
+			key_next = IDLE;
 		}
 		else
 		{
@@ -50,7 +50,7 @@ class StateJump extends State
 				samurai.change_animation(AIRSPIN);
 			}
 
-			if (samurai.movement.jump_steps_remaining <= 4)
+			if (samurai.movement.steps_remaining_before_apex <= 0)
 			{
 				samurai.animation_next = AnimationKey.JUMP;
 				samurai.change_animation(AnimationKey.JUMP);

@@ -331,6 +331,7 @@ class Play extends Scene
 		var is_level_visible = true;
 		var zoom = 1;
 
+		var level_index = 2; // jump test
 		var level_index = 0; // test level
 		var level_index = 1; // massive platformer
 
@@ -657,7 +658,7 @@ class Play extends Scene
 				player.collect_key();
 			}
 
-			if (!player.is_holding_sacred_stone && sacred_stone.tint.a != 0x00)
+			if (!player.is_holding_sacred_stone && sacred_stone != null && sacred_stone.tint.a != 0x00)
 			{
 				if (distance_to_point(
 					player.movement.position.x,
