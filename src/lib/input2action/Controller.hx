@@ -105,24 +105,25 @@ class Input
 	{
 		target = {}
 
+		var left_right: ButtonPair = {
+			on_press_a: () -> target.left.on_press(),
+			on_release_a: () -> target.left.on_release(),
+			on_press_b: () -> target.right.on_press(),
+			on_release_b: () -> target.right.on_release(),
+		}
+
 		var action_map: ActionMap = [
 			"left" => {
 				action: (isDown, player) ->
 				{
-					if (isDown)
-						target.left.on_press();
-					else
-						target.left.on_release();
+					left_right.controlA(isDown);
 				},
 				up: true
 			},
 			"right" => {
 				action: (isDown, player) ->
 				{
-					if (isDown)
-						target.right.on_press();
-					else
-						target.right.on_release();
+					left_right.controlB(isDown);
 				},
 				up: true
 			},
@@ -201,7 +202,8 @@ class Input
 
 		input2Action.addKeyboard(keyboard_action);
 
-		Gamepad.onConnect.add(gamepad -> {
+		Gamepad.onConnect.add(gamepad ->
+		{
 			var gamepad_action = new GamepadAction(gamepad.id, action_config, action_map);
 			input2Action.addGamepad(gamepad, gamepad_action);
 			gamepad.onDisconnect.add(() -> input2Action.removeGamepad(gamepad));
@@ -213,5 +215,59 @@ class Input
 	public function change_target(target: ControllerActions)
 	{
 		this.target = target;
+	}
+}
+
+@:structInit
+class ButtonPair
+{
+	var on_press_a: () -> Void = () -> return;
+	var on_release_a: () -> Void = () -> return;
+	var is_pressed_a: Bool = false;
+
+	var on_press_b: () -> Void = () -> return;
+	var on_release_b: () -> Void = () -> return;
+	var is_pressed_b: Bool = false;
+
+	public function controlA(is_button_pressed: Bool)
+	{
+		if (is_button_pressed)
+		{
+			is_pressed_a = true;
+			on_press_a();
+		}
+		else
+		{
+			is_pressed_a = false;
+			if (is_pressed_b)
+			{
+				on_press_b();
+			}
+			else
+			{
+				on_release_a();
+			}
+		}
+	}
+
+	public function controlB(is_button_pressed: Bool)
+	{
+		if (is_button_pressed)
+		{
+			is_pressed_b = true;
+			on_press_b();
+		}
+		else
+		{
+			is_pressed_b = false;
+			if (is_pressed_a)
+			{
+				on_press_a();
+			}
+			else
+			{
+				on_release_b();
+			}
+		}
 	}
 }
